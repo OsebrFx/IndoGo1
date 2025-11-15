@@ -410,10 +410,17 @@ class TicketPrintFormatter(
 
         commands.add(CMD.emptyLine())
 
-        // Compact airline logo
+        // Professional airline logo - Enhanced design
         commands.add(CMD.alignCenter())
-        commands.add(CMD.printLine("      __|__      "))
-        commands.add(CMD.printLine("  --@-(_)-@--    "))
+        commands.add(CMD.printLine("    .---._.---.    "))
+        commands.add(CMD.printLine("   /    ___    \\   "))
+        commands.add(CMD.printLine("  | .-'     '-. |  "))
+        commands.add(CMD.printLine("   \\___________/   "))
+        commands.add(CMD.printLine("    '-.._____..-'  "))
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.setBold(true))
+        commands.add(CMD.printLine("* INDOGO AIRLINES *"))
+        commands.add(CMD.setBold(false))
         commands.add(CMD.emptyLine())
 
         // Airline name and horizontal boarding pass title
@@ -422,12 +429,13 @@ class TicketPrintFormatter(
         commands.add(CMD.printLine("INDOGO"))
         commands.add(CMD.textSizeNormal())
         commands.add(CMD.emptyLine())
-        commands.add(CMD.printLine("--- BOARDING PASS ---"))
+        commands.add(CMD.printLine("===================="))
+        commands.add(CMD.printLine("   BOARDING PASS    "))
+        commands.add(CMD.printLine("===================="))
         commands.add(CMD.setBold(false))
         commands.add(CMD.alignLeft())
 
         commands.add(CMD.emptyLine())
-        commands.add(CMD.printDivider(charWidth))
 
         return commands.reduce { acc, bytes -> acc + bytes }
     }
@@ -444,7 +452,7 @@ class TicketPrintFormatter(
         commands.add(CMD.alignCenter())
         commands.add(CMD.setBold(true))
         commands.add(CMD.textSizeTriple())
-        commands.add(CMD.printLine("${ticket.flight.departureCode} → ${ticket.flight.arrivalCode}"))
+        commands.add(CMD.printLine("${ticket.flight.departureCode} > ${ticket.flight.arrivalCode}"))
         commands.add(CMD.textSizeNormal())
         commands.add(CMD.setBold(false))
         commands.add(CMD.alignLeft())
