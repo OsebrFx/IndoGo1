@@ -26,7 +26,7 @@ class PrinterConnectionManager(private val context: Context) {
         private const val TAG = "PrinterConnectionMgr"
         // Standard Serial Port Profile UUID for Bluetooth printers
         private val SPP_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-        private const val WIFI_TIMEOUT = 5000 // 5 seconds
+        private const val WIFI_TIMEOUT = 10000 // 10 seconds - increased for WiFi stability
     }
 
     // Connection state
@@ -94,6 +94,12 @@ class PrinterConnectionManager(private val context: Context) {
             Log.d(TAG, "Connecting to WiFi printer at ${config.wifiIpAddress}:${config.wifiPort}")
 
             val socket = Socket()
+
+            // Configure socket options for better reliability
+            socket.soTimeout = WIFI_TIMEOUT
+            socket.keepAlive = true
+            socket.tcpNoDelay = true  // Disable Nagle's algorithm for real-time data
+
             socket.connect(
                 InetSocketAddress(config.wifiIpAddress, config.wifiPort),
                 WIFI_TIMEOUT
@@ -104,13 +110,14 @@ class PrinterConnectionManager(private val context: Context) {
                 outputStream = socket.getOutputStream()
                 currentConnectionType = ConnectionType.WIFI
                 updateStatus(PrinterStatus.CONNECTED)
-                Log.d(TAG, "WiFi connection successful")
+                Log.d(TAG, "WiFi connection successful to ${config.wifiIpAddress}:${config.wifiPort}")
                 Result.success(Unit)
             } else {
-                throw IOException("Failed to connect to WiFi printer")
+                throw IOException("Failed to connect to WiFi printer at ${config.wifiIpAddress}:${config.wifiPort}")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "WiFi connection failed", e)
+            Log.e(TAG, "WiFi connection failed to ${config.wifiIpAddress}:${config.wifiPort}", e)
+            Log.e(TAG, "Error details: ${e.message}")
             updateStatus(PrinterStatus.ERROR)
             Result.failure(e)
         }
