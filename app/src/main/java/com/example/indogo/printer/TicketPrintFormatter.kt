@@ -34,6 +34,7 @@ class TicketPrintFormatter(
 
     /**
      * Format complete ticket for printing with barcode
+     * Optimized compact professional design like real airline boarding passes
      */
     fun formatTicket(ticket: Ticket): ByteArray {
         val commands = mutableListOf<ByteArray>()
@@ -42,29 +43,17 @@ class TicketPrintFormatter(
         commands.add(CMD.initPrinter())
         commands.add(CMD.setPrintDensity(15))
 
-        // Header
-        commands.add(formatHeader(ticket))
+        // Compact header with horizontal title
+        commands.add(formatCompactHeader(ticket))
 
-        // Flight information
-        commands.add(formatFlightInfo(ticket))
+        // Essential flight and passenger information in compact layout
+        commands.add(formatEssentialInfo(ticket))
 
-        // Passenger information
-        commands.add(formatPassengerInfo(ticket))
+        // Prominent barcode
+        commands.add(formatProminentBarcode(ticket))
 
-        // Boarding information
-        commands.add(formatBoardingInfo(ticket))
-
-        // Baggage information
-        commands.add(formatBaggageInfo(ticket))
-
-        // Payment information
-        commands.add(formatPaymentInfo(ticket))
-
-        // Barcode
-        commands.add(formatBarcode(ticket))
-
-        // Footer
-        commands.add(formatFooter(ticket))
+        // Minimal footer
+        commands.add(formatMinimalFooter())
 
         // Feed and cut
         commands.add(CMD.feedAndCut())
@@ -411,6 +400,139 @@ class TicketPrintFormatter(
         val paddedKey = key.padEnd(padding, ' ')
         val line = "$paddedKey: $value"
         return CMD.printLine(line)
+    }
+
+    /**
+     * Format compact header with horizontal title - Professional design
+     */
+    private fun formatCompactHeader(ticket: Ticket): ByteArray {
+        val commands = mutableListOf<ByteArray>()
+
+        commands.add(CMD.emptyLine())
+
+        // Compact airline logo
+        commands.add(CMD.alignCenter())
+        commands.add(CMD.printLine("      __|__      "))
+        commands.add(CMD.printLine("  --@-(_)-@--    "))
+        commands.add(CMD.emptyLine())
+
+        // Airline name and horizontal boarding pass title
+        commands.add(CMD.setBold(true))
+        commands.add(CMD.textSizeDouble())
+        commands.add(CMD.printLine("INDOGO"))
+        commands.add(CMD.textSizeNormal())
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.printLine("--- BOARDING PASS ---"))
+        commands.add(CMD.setBold(false))
+        commands.add(CMD.alignLeft())
+
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.printDivider(charWidth))
+
+        return commands.reduce { acc, bytes -> acc + bytes }
+    }
+
+    /**
+     * Format essential information in compact layout - Only important details
+     */
+    private fun formatEssentialInfo(ticket: Ticket): ByteArray {
+        val commands = mutableListOf<ByteArray>()
+
+        commands.add(CMD.emptyLine())
+
+        // Route - Large and prominent
+        commands.add(CMD.alignCenter())
+        commands.add(CMD.setBold(true))
+        commands.add(CMD.textSizeTriple())
+        commands.add(CMD.printLine("${ticket.flight.departureCode} → ${ticket.flight.arrivalCode}"))
+        commands.add(CMD.textSizeNormal())
+        commands.add(CMD.setBold(false))
+        commands.add(CMD.alignLeft())
+
+        commands.add(CMD.emptyLine())
+
+        // Passenger name - Prominent
+        commands.add(CMD.setBold(true))
+        commands.add(CMD.textSizeWide())
+        commands.add(CMD.printLine("PASSENGER"))
+        commands.add(CMD.textSizeNormal())
+        commands.add(CMD.setBold(false))
+        commands.add(CMD.printLine(ticket.passengerName.uppercase()))
+
+        commands.add(CMD.emptyLine())
+
+        // Flight details in compact 2-column layout
+        commands.add(CMD.printLine("Flight: ${ticket.flightNumber}    Date: ${ticket.travelDate}"))
+        commands.add(CMD.printLine("Depart: ${ticket.flight.departureTime}  Class: ${ticket.className}"))
+
+        commands.add(CMD.emptyLine())
+
+        // Boarding information - Critical details
+        commands.add(CMD.setBold(true))
+        commands.add(CMD.printLine("BOARDING INFO"))
+        commands.add(CMD.setBold(false))
+        commands.add(CMD.printLine("Seat: ${ticket.seatNumber}      Gate: ${ticket.gate}"))
+        commands.add(CMD.printLine("Terminal: ${ticket.terminal}"))
+        commands.add(CMD.printLine("Board: ${ticket.boardingTime}"))
+
+        commands.add(CMD.emptyLine())
+
+        // PNR and Booking Reference
+        commands.add(CMD.printLine("PNR: ${ticket.pnr}"))
+        commands.add(CMD.printLine("Ref: ${ticket.bookingReference}"))
+
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.printDivider(charWidth))
+
+        return commands.reduce { acc, bytes -> acc + bytes }
+    }
+
+    /**
+     * Format prominent barcode - Large and clearly visible
+     */
+    private fun formatProminentBarcode(ticket: Ticket): ByteArray {
+        val commands = mutableListOf<ByteArray>()
+
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.alignCenter())
+
+        // Large barcode with auto-detection
+        val barcodeData = ticket.bookingReference
+        val barcodeType = detectBarcodeType(barcodeData)
+
+        // Larger barcode for better scanning
+        commands.add(CMD.printBarcode(barcodeData, type = barcodeType.code, height = 120))
+
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.setBold(true))
+        commands.add(CMD.textSizeWide())
+        commands.add(CMD.printLine(barcodeData))
+        commands.add(CMD.textSizeNormal())
+        commands.add(CMD.setBold(false))
+
+        commands.add(CMD.alignLeft())
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.printDivider(charWidth))
+
+        return commands.reduce { acc, bytes -> acc + bytes }
+    }
+
+    /**
+     * Format minimal footer - Just airline branding
+     */
+    private fun formatMinimalFooter(): ByteArray {
+        val commands = mutableListOf<ByteArray>()
+
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.alignCenter())
+
+        commands.add(CMD.printLine("IndoGo Airlines"))
+        commands.add(CMD.printLine("Have a pleasant journey!"))
+
+        commands.add(CMD.alignLeft())
+        commands.add(CMD.emptyLine())
+
+        return commands.reduce { acc, bytes -> acc + bytes }
     }
 
     /**
