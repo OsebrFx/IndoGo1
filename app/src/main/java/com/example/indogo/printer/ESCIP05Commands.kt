@@ -1,7 +1,6 @@
 package com.example.indogo.printer
 
 import android.graphics.Bitmap
-import java.nio.charset.Charset
 
 /**
  * ESCIP05 Command Protocol Implementation for Gainsha GA-E200I Thermal Printer
@@ -113,14 +112,14 @@ object ESCIP05Commands {
      * Print text with newline
      */
     fun printLine(text: String): ByteArray {
-        return text.toByteArray(Charset.forName("GB2312")) + byteArrayOf(LF)
+        return text.toByteArray(Charsets.ISO_8859_1) + byteArrayOf(LF)
     }
 
     /**
      * Print text without newline
      */
     fun printText(text: String): ByteArray {
-        return text.toByteArray(Charset.forName("GB2312"))
+        return text.toByteArray(Charsets.ISO_8859_1)
     }
 
     /**
@@ -168,7 +167,7 @@ object ESCIP05Commands {
         val setBarcodeFont = byteArrayOf(GS, 0x66, 0) // Font A
 
         val barcodeCommand = byteArrayOf(GS, 0x6B, type.toByte(), data.length.toByte())
-        val barcodeData = data.toByteArray(Charset.forName("US-ASCII"))
+        val barcodeData = data.toByteArray(Charsets.US_ASCII)
 
         return setBarcodeHeight + setBarcodeWidth + setHRIPosition +
                setBarcodeFont + barcodeCommand + barcodeData
@@ -180,7 +179,7 @@ object ESCIP05Commands {
      * @param size Module size (1-16)
      */
     fun printQRCode(data: String, size: Int = 6): ByteArray {
-        val qrData = data.toByteArray(Charset.forName("UTF-8"))
+        val qrData = data.toByteArray(Charsets.UTF_8)
         val pL = (qrData.size + 3) % 256
         val pH = (qrData.size + 3) / 256
 
