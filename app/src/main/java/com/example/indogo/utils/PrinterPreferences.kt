@@ -28,6 +28,7 @@ class PrinterPreferences(context: Context) {
         private const val KEY_PRINT_SPEED = "print_speed"
 
         // Default values
+        private const val DEFAULT_WIFI_IP = "192.168.11.200"
         private const val DEFAULT_WIFI_PORT = 9100
         private const val DEFAULT_PRINTER_MODEL = "GA-E200I"
         private const val DEFAULT_COMMAND_PROTOCOL = "ESCIP05"
@@ -61,11 +62,11 @@ class PrinterPreferences(context: Context) {
      * Load printer configuration
      */
     fun getPrinterConfig(): PrinterConfig {
-        val connectionTypeStr = preferences.getString(KEY_CONNECTION_TYPE, ConnectionType.BLUETOOTH.name)
+        val connectionTypeStr = preferences.getString(KEY_CONNECTION_TYPE, ConnectionType.WIFI.name)
         val connectionType = try {
-            ConnectionType.valueOf(connectionTypeStr ?: ConnectionType.BLUETOOTH.name)
+            ConnectionType.valueOf(connectionTypeStr ?: ConnectionType.WIFI.name)
         } catch (e: Exception) {
-            ConnectionType.BLUETOOTH
+            ConnectionType.WIFI
         }
 
         val paperWidthStr = preferences.getString(KEY_PAPER_WIDTH, PaperWidth.WIDTH_80MM.name)
@@ -77,7 +78,7 @@ class PrinterPreferences(context: Context) {
 
         return PrinterConfig(
             connectionType = connectionType,
-            wifiIpAddress = preferences.getString(KEY_WIFI_IP, "") ?: "",
+            wifiIpAddress = preferences.getString(KEY_WIFI_IP, DEFAULT_WIFI_IP) ?: DEFAULT_WIFI_IP,
             wifiPort = preferences.getInt(KEY_WIFI_PORT, DEFAULT_WIFI_PORT),
             bluetoothDeviceName = preferences.getString(KEY_BT_NAME, "") ?: "",
             bluetoothDeviceAddress = preferences.getString(KEY_BT_ADDRESS, "") ?: "",
