@@ -1,248 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ScrollView permet de scroller si le contenu est long -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="#5F4FD1">
 
-    <LinearLayout
+    <!-- Header Section -->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:padding="16dp">
 
-        <!-- Barre de retour en haut -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp">
-
-            <ImageView
-                android:id="@+id/btnBack"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentStart="true"
-                android:contentDescription="Retour"
-                android:padding="8dp"
-                android:src="@drawable/ic_back_arrow"
-                app:tint="@android:color/white" />
-
-        </RelativeLayout>
-
-        <!-- Logo / Nom de l'application -->
+        <!-- Logo / App Name -->
         <TextView
             android:id="@+id/ivLogo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            android:textColor="#FFFFFF"
-            android:textSize="60sp"
-            android:textStyle="bold"
+            android:layout_centerHorizontal="true"
             android:text="IndiGo"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
+            android:textStyle="bold"
             android:contentDescription="Logo IndiGo" />
+    </RelativeLayout>
 
-        <!-- Carte principale contenant les infos -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp">
+    <!-- Search/Filter Section (Optional - can be added later) -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Available Flights"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+    <!-- RecyclerView for Flight List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvFlightList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false" />
 
-                <!-- Date du vol -->
-                <TextView
-                    android:id="@+id/tvDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="20 December 2022"
-                    android:textColor="#000000"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Section trajet (Départ -> Arrivée) -->
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp">
-
-                    <!-- Ville de départ -->
-                    <LinearLayout
-                        android:id="@+id/layoutDeparture"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="DEL"
-                            android:textColor="#000000"
-                            android:textSize="32sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Delhi International Airport"
-                            android:textColor="#666666"
-                            android:textSize="10sp"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                    <!-- Info vol (durée + icône avion) -->
-                    <LinearLayout
-                        android:id="@+id/layoutFlightInfo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        android:layout_centerVertical="true"
-                        android:orientation="vertical"
-                        android:gravity="center">
-
-                        <!-- Ligne + texte avion -->
-                        <LinearLayout
-                            android:id="@+id/flightIcon"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="horizontal"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp">
-
-                            <View
-                                android:layout_width="30dp"
-                                android:layout_height="2dp"
-                                android:background="@drawable/dashed_line_yellow" />
-
-                            <!-- Ici on remplace ✈ par texte -->
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Avion"
-                                android:textColor="#FFA726"
-                                android:textSize="14sp" />
-
-                            <View
-                                android:layout_width="30dp"
-                                android:layout_height="2dp"
-                                android:background="@drawable/dashed_line_yellow" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="04h 30m"
-                            android:textColor="#666666"
-                            android:textSize="12sp"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                    <!-- Ville d’arrivée -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:orientation="vertical"
-                        android:gravity="end">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="BLR"
-                            android:textColor="#000000"
-                            android:textSize="32sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Bengaluru Airport India"
-                            android:textColor="#666666"
-                            android:textSize="10sp"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-                </RelativeLayout>
-
-                <!-- Infos passager -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="20dp">
-
-                    <!-- Nombre d'adultes -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Passager:"
-                            android:textColor="#000000"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" 01 Adulte"
-                            android:textColor="#000000"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <!-- Type de service (ex: repas) -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Service:"
-                            android:textColor="#000000"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" Repas"
-                            android:textColor="#000000"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- ... (le reste du code reste identique à ta version) ... -->
-
-                <!-- Bouton de téléchargement -->
-                <Button
-                    android:id="@+id/btnDownload"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="Télécharger le billet"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:background="@drawable/button_bg"
-                    android:textAllCaps="false" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-    </LinearLayout>
-</ScrollView>
+</LinearLayout>
