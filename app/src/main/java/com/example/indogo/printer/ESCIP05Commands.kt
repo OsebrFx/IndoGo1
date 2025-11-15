@@ -281,13 +281,6 @@ object ESCIP05Commands {
     }
 
     /**
-     * Combine multiple commands
-     */
-    operator fun ByteArray.plus(other: ByteArray): ByteArray {
-        return this + other
-    }
-
-    /**
      * Helper to create empty space
      */
     fun emptyLine(): ByteArray {
