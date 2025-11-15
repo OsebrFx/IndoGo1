@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.indogo.databinding.ActivityTicketDetailBinding
 import com.example.indogo.models.*
 import com.example.indogo.printer.ThermalPrinterService
+import com.example.indogo.models.ConnectionType
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
@@ -48,6 +49,7 @@ class TicketDetailActivity : AppCompatActivity() {
         setupUI()
         displayTicket()
         observePrinterStatus()
+        autoConnectToPrinter()
     }
 
     private fun setupUI() {
@@ -283,6 +285,27 @@ class TicketDetailActivity : AppCompatActivity() {
         lifecycleScope.launch {
             printerService.printerStatus.collect { status ->
                 updateStatusUI(status)
+            }
+        }
+    }
+
+    private fun autoConnectToPrinter() {
+        lifecycleScope.launch {
+            // Check if printer is already connected
+            if (printerService.isConnected()) {
+                return@launch
+            }
+
+            // Get printer config
+            val config = printerService.getConfig()
+
+            // Only auto-connect for WiFi with configured IP
+            if (config.connectionType == ConnectionType.WIFI && config.wifiIpAddress.isNotEmpty()) {
+                try {
+                    printerService.connect(config)
+                } catch (e: Exception) {
+                    // Silent fail on auto-connect, user can manually connect later
+                }
             }
         }
     }
