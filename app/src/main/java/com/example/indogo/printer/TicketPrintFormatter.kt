@@ -45,8 +45,8 @@ class TicketPrintFormatter(
         // Payment information
         commands.add(formatPaymentInfo(ticket))
 
-        // QR Code
-        commands.add(formatQRCode(ticket))
+        // Barcode
+        commands.add(formatBarcode(ticket))
 
         // Footer
         commands.add(formatFooter(ticket))
@@ -63,8 +63,17 @@ class TicketPrintFormatter(
     private fun formatHeader(ticket: Ticket): ByteArray {
         val commands = mutableListOf<ByteArray>()
 
-        // Airline name (large, centered)
+        // Logo ASCII Art
         commands.add(CMD.alignCenter())
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.printLine("    ___    "))
+        commands.add(CMD.printLine("   (o o)   "))
+        commands.add(CMD.printLine("  (  V  )  "))
+        commands.add(CMD.printLine("  /|||||\\  "))
+        commands.add(CMD.printLine(" _|||||||||_"))
+        commands.add(CMD.emptyLine())
+
+        // Airline name (large, centered)
         commands.add(CMD.setBold(true))
         commands.add(CMD.textSizeDouble())
         commands.add(CMD.printLine("INDOGO AIRLINES"))
@@ -207,21 +216,23 @@ class TicketPrintFormatter(
     }
 
     /**
-     * Format QR code section
+     * Format Barcode section
      */
-    private fun formatQRCode(ticket: Ticket): ByteArray {
+    private fun formatBarcode(ticket: Ticket): ByteArray {
         val commands = mutableListOf<ByteArray>()
 
         commands.add(CMD.emptyLine())
         commands.add(CMD.alignCenter())
 
-        // QR Code
-        commands.add(CMD.printQRCode(ticket.qrCodeData, size = 6))
+        // Barcode - Using booking reference as barcode data
+        val barcodeData = ticket.bookingReference
+        commands.add(CMD.printBarcode(barcodeData, type = 73, height = 100))
 
         commands.add(CMD.emptyLine())
         commands.add(CMD.setBold(true))
-        commands.add(CMD.printLine("SCAN FOR DETAILS"))
+        commands.add(CMD.printLine("SCAN BARCODE"))
         commands.add(CMD.setBold(false))
+        commands.add(CMD.printLine(barcodeData))
 
         commands.add(CMD.alignLeft())
         commands.add(CMD.printDivider(charWidth))
@@ -286,6 +297,13 @@ class TicketPrintFormatter(
 
         commands.add(CMD.initPrinter())
         commands.add(CMD.alignCenter())
+
+        // Simple logo
+        commands.add(CMD.printLine("  ___  "))
+        commands.add(CMD.printLine(" (o o) "))
+        commands.add(CMD.printLine(" _|||_ "))
+        commands.add(CMD.emptyLine())
+
         commands.add(CMD.setBold(true))
         commands.add(CMD.textSizeDouble())
         commands.add(CMD.printLine("INDOGO"))
@@ -303,7 +321,8 @@ class TicketPrintFormatter(
         commands.add(CMD.emptyLine())
 
         commands.add(CMD.alignCenter())
-        commands.add(CMD.printQRCode(ticket.qrCodeData, size = 5))
+        // Barcode instead of QR code
+        commands.add(CMD.printBarcode(ticket.bookingReference, type = 73, height = 80))
         commands.add(CMD.emptyLine())
 
         commands.add(CMD.feedAndCut())
@@ -319,6 +338,16 @@ class TicketPrintFormatter(
 
         commands.add(CMD.initPrinter())
         commands.add(CMD.alignCenter())
+
+        // Logo
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.printLine("    ___    "))
+        commands.add(CMD.printLine("   (o o)   "))
+        commands.add(CMD.printLine("  (  V  )  "))
+        commands.add(CMD.printLine("  /|||||\\  "))
+        commands.add(CMD.printLine(" _|||||||||_"))
+        commands.add(CMD.emptyLine())
+
         commands.add(CMD.setBold(true))
         commands.add(CMD.textSizeDouble())
         commands.add(CMD.printLine("TEST PRINT"))
