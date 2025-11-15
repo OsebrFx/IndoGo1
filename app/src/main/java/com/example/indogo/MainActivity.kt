@@ -1,6 +1,9 @@
 package com.example.indogo
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -101,15 +104,26 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun onFlightClick(flight: Flight) {
-        val message = "Selected: ${flight.airlineName}\n" +
-                "${flight.departureCode} → ${flight.arrivalCode}\n" +
-                "Price: ₹${flight.price}"
+        // Navigate to ticket detail screen with print functionality
+        val intent = Intent(this, TicketDetailActivity::class.java).apply {
+            putExtra(TicketDetailActivity.EXTRA_FLIGHT, flight)
+        }
+        startActivity(intent)
+    }
 
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
 
-        // TODO: Navigate to booking details or payment screen
-        // Example: startActivity(Intent(this, BookingDetailsActivity::class.java).apply {
-        //     putExtra("flight", flight)
-        // })
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_printer_settings -> {
+                val intent = Intent(this, PrinterSettingsActivity::class.java)
+                startActivity(intent)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }

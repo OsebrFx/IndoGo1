@@ -1,6 +1,7 @@
 package com.example.indogo
 
 import androidx.annotation.DrawableRes
+import java.io.Serializable
 
 data class Flight(
     val airlineName: String,
@@ -14,4 +15,4 @@ data class Flight(
     val hasFreeMeal: Boolean = false,
     val promoCode: String = "",
     val promoBackgroundColor: String = "#E8F5E9"
-)
+) : Serializable
