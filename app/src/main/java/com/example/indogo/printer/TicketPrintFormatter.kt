@@ -5,6 +5,21 @@ import com.example.indogo.models.Ticket
 import com.example.indogo.printer.ESCIP05Commands as CMD
 
 /**
+ * Barcode types supported by the printer
+ */
+enum class BarcodeType(val code: Int) {
+    UPC_A(65),      // UPC-A
+    UPC_E(66),      // UPC-E
+    EAN13(67),      // EAN13 (JAN13)
+    EAN8(68),       // EAN8 (JAN8)
+    CODE39(69),     // CODE39
+    ITF(70),        // ITF (Interleaved 2 of 5)
+    CODABAR(71),    // CODABAR
+    CODE93(72),     // CODE93
+    CODE128(73)     // CODE128 (default)
+}
+
+/**
  * Formats ticket data for thermal printing using ESCIP05 commands
  */
 class TicketPrintFormatter(
@@ -18,7 +33,7 @@ class TicketPrintFormatter(
     }
 
     /**
-     * Format complete ticket for printing
+     * Format complete ticket for printing with barcode
      */
     fun formatTicket(ticket: Ticket): ByteArray {
         val commands = mutableListOf<ByteArray>()
@@ -58,31 +73,76 @@ class TicketPrintFormatter(
     }
 
     /**
+     * Format complete ticket for printing with QR code (alternative)
+     */
+    fun formatTicketWithQRCode(ticket: Ticket): ByteArray {
+        val commands = mutableListOf<ByteArray>()
+
+        // Initialize printer
+        commands.add(CMD.initPrinter())
+        commands.add(CMD.setPrintDensity(15))
+
+        // Header
+        commands.add(formatHeader(ticket))
+
+        // Flight information
+        commands.add(formatFlightInfo(ticket))
+
+        // Passenger information
+        commands.add(formatPassengerInfo(ticket))
+
+        // Boarding information
+        commands.add(formatBoardingInfo(ticket))
+
+        // Baggage information
+        commands.add(formatBaggageInfo(ticket))
+
+        // Payment information
+        commands.add(formatPaymentInfo(ticket))
+
+        // QR Code instead of barcode
+        commands.add(formatQRCode(ticket))
+
+        // Footer
+        commands.add(formatFooter(ticket))
+
+        // Feed and cut
+        commands.add(CMD.feedAndCut())
+
+        return commands.reduce { acc, bytes -> acc + bytes }
+    }
+
+    /**
      * Format header section
      */
     private fun formatHeader(ticket: Ticket): ByteArray {
         val commands = mutableListOf<ByteArray>()
 
-        // Logo ASCII Art
+        // Professional Logo ASCII Art - Airplane
         commands.add(CMD.alignCenter())
         commands.add(CMD.emptyLine())
-        commands.add(CMD.printLine("    ___    "))
-        commands.add(CMD.printLine("   (o o)   "))
-        commands.add(CMD.printLine("  (  V  )  "))
-        commands.add(CMD.printLine("  /|||||\\  "))
-        commands.add(CMD.printLine(" _|||||||||_"))
+        commands.add(CMD.printLine("        __|__        "))
+        commands.add(CMD.printLine("  --@--@--(_)--@--@--"))
+        commands.add(CMD.printLine("                     "))
+        commands.add(CMD.printLine("  * INDOGO AIRLINES *"))
+        commands.add(CMD.emptyLine())
+
+        // Decorative border
+        commands.add(CMD.printLine("====================="))
         commands.add(CMD.emptyLine())
 
         // Airline name (large, centered)
         commands.add(CMD.setBold(true))
         commands.add(CMD.textSizeDouble())
-        commands.add(CMD.printLine("INDOGO AIRLINES"))
+        commands.add(CMD.printLine("INDOGO"))
         commands.add(CMD.textSizeNormal())
         commands.add(CMD.setBold(false))
 
         // Boarding pass title
         commands.add(CMD.emptyLine())
+        commands.add(CMD.setBold(true))
         commands.add(CMD.printLine("BOARDING PASS"))
+        commands.add(CMD.setBold(false))
         commands.add(CMD.alignLeft())
 
         // Divider
@@ -216,7 +276,41 @@ class TicketPrintFormatter(
     }
 
     /**
-     * Format Barcode section
+     * Automatically detect the best barcode type for the data
+     */
+    private fun detectBarcodeType(data: String): BarcodeType {
+        return when {
+            // UPC-A: 12 digits exactly
+            data.matches(Regex("^\\d{12}$")) -> BarcodeType.UPC_A
+
+            // UPC-E: 8 digits exactly
+            data.matches(Regex("^\\d{8}$")) -> BarcodeType.UPC_E
+
+            // EAN13: 13 digits exactly
+            data.matches(Regex("^\\d{13}$")) -> BarcodeType.EAN13
+
+            // EAN8: 8 digits and starts with specific prefixes
+            data.matches(Regex("^\\d{8}$")) && data.startsWith("0") -> BarcodeType.EAN8
+
+            // CODE39: Alphanumeric with special chars
+            data.matches(Regex("^[A-Z0-9 \\-.$/%+]+$")) -> BarcodeType.CODE39
+
+            // ITF: Even number of digits
+            data.matches(Regex("^\\d+$")) && data.length % 2 == 0 -> BarcodeType.ITF
+
+            // CODABAR: Starts with A,B,C,D and ends with same
+            data.matches(Regex("^[A-D][0-9\\-$:/.+]+[A-D]$")) -> BarcodeType.CODABAR
+
+            // CODE93: Alphanumeric
+            data.matches(Regex("^[A-Z0-9]+$")) -> BarcodeType.CODE93
+
+            // CODE128: Default for everything else (most versatile)
+            else -> BarcodeType.CODE128
+        }
+    }
+
+    /**
+     * Format Barcode section with automatic type detection
      */
     private fun formatBarcode(ticket: Ticket): ByteArray {
         val commands = mutableListOf<ByteArray>()
@@ -226,13 +320,43 @@ class TicketPrintFormatter(
 
         // Barcode - Using booking reference as barcode data
         val barcodeData = ticket.bookingReference
-        commands.add(CMD.printBarcode(barcodeData, type = 73, height = 100))
+        val barcodeType = detectBarcodeType(barcodeData)
+
+        // Print barcode with detected type
+        commands.add(CMD.printBarcode(barcodeData, type = barcodeType.code, height = 100))
 
         commands.add(CMD.emptyLine())
         commands.add(CMD.setBold(true))
         commands.add(CMD.printLine("SCAN BARCODE"))
         commands.add(CMD.setBold(false))
         commands.add(CMD.printLine(barcodeData))
+
+        // Show barcode type for reference
+        commands.add(CMD.printLine("Type: ${barcodeType.name}"))
+
+        commands.add(CMD.alignLeft())
+        commands.add(CMD.printDivider(charWidth))
+
+        return commands.reduce { acc, bytes -> acc + bytes }
+    }
+
+    /**
+     * Format QR Code section (alternative to barcode)
+     */
+    private fun formatQRCode(ticket: Ticket): ByteArray {
+        val commands = mutableListOf<ByteArray>()
+
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.alignCenter())
+
+        // QR Code with ticket data
+        commands.add(CMD.printQRCode(ticket.qrCodeData, size = 6))
+
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.setBold(true))
+        commands.add(CMD.printLine("SCAN QR CODE"))
+        commands.add(CMD.setBold(false))
+        commands.add(CMD.printLine(ticket.bookingReference))
 
         commands.add(CMD.alignLeft())
         commands.add(CMD.printDivider(charWidth))
@@ -298,10 +422,12 @@ class TicketPrintFormatter(
         commands.add(CMD.initPrinter())
         commands.add(CMD.alignCenter())
 
-        // Simple logo
-        commands.add(CMD.printLine("  ___  "))
-        commands.add(CMD.printLine(" (o o) "))
-        commands.add(CMD.printLine(" _|||_ "))
+        // Compact professional logo
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.printLine("    __|__    "))
+        commands.add(CMD.printLine(" --@-(_)-@-- "))
+        commands.add(CMD.printLine("   INDOGO    "))
+        commands.add(CMD.printLine("============="))
         commands.add(CMD.emptyLine())
 
         commands.add(CMD.setBold(true))
@@ -321,9 +447,11 @@ class TicketPrintFormatter(
         commands.add(CMD.emptyLine())
 
         commands.add(CMD.alignCenter())
-        // Barcode instead of QR code
-        commands.add(CMD.printBarcode(ticket.bookingReference, type = 73, height = 80))
+        // Barcode with auto-detection
+        val barcodeType = detectBarcodeType(ticket.bookingReference)
+        commands.add(CMD.printBarcode(ticket.bookingReference, type = barcodeType.code, height = 80))
         commands.add(CMD.emptyLine())
+        commands.add(CMD.printLine(ticket.bookingReference))
 
         commands.add(CMD.feedAndCut())
 
@@ -339,13 +467,14 @@ class TicketPrintFormatter(
         commands.add(CMD.initPrinter())
         commands.add(CMD.alignCenter())
 
-        // Logo
+        // Professional Logo
         commands.add(CMD.emptyLine())
-        commands.add(CMD.printLine("    ___    "))
-        commands.add(CMD.printLine("   (o o)   "))
-        commands.add(CMD.printLine("  (  V  )  "))
-        commands.add(CMD.printLine("  /|||||\\  "))
-        commands.add(CMD.printLine(" _|||||||||_"))
+        commands.add(CMD.printLine("        __|__        "))
+        commands.add(CMD.printLine("  --@--@--(_)--@--@--"))
+        commands.add(CMD.printLine("                     "))
+        commands.add(CMD.printLine("  * INDOGO AIRLINES *"))
+        commands.add(CMD.emptyLine())
+        commands.add(CMD.printLine("====================="))
         commands.add(CMD.emptyLine())
 
         commands.add(CMD.setBold(true))
@@ -360,6 +489,17 @@ class TicketPrintFormatter(
         commands.add(CMD.printLine("Protocol: ESCIP05"))
         commands.add(CMD.printLine("Paper Width: ${paperWidth.widthMm}mm"))
         commands.add(CMD.printLine("Status: OK"))
+        commands.add(CMD.emptyLine())
+
+        // Test all barcode types
+        commands.add(CMD.setBold(true))
+        commands.add(CMD.printLine("Supported Barcode Types:"))
+        commands.add(CMD.setBold(false))
+        commands.add(CMD.printLine("- UPC-A / UPC-E"))
+        commands.add(CMD.printLine("- EAN8 / EAN13 (JAN)"))
+        commands.add(CMD.printLine("- CODE39 / CODE93"))
+        commands.add(CMD.printLine("- CODE128 / ITF"))
+        commands.add(CMD.printLine("- CODABAR"))
         commands.add(CMD.emptyLine())
 
         commands.add(CMD.alignCenter())
