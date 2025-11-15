@@ -103,12 +103,34 @@ The IndoGo app now supports thermal printing of flight tickets using the **Gains
 ### WiFi Configuration Example
 
 ```
-IP Address: 192.168.1.100
+IP Address: 192.168.11.200  (DEFAULT - Pre-configured)
 Port: 9100
 Paper Width: 80mm
 ```
 
+### ⚠️ IMPORTANT - Configuration actuelle de votre imprimante
+
+Selon les informations de votre imprimante:
+- **IP**: 192.168.11.200 ✅ (Déjà configuré dans l'app)
+- **Port**: 9100 ✅ (Déjà configuré dans l'app)
+- **Masque**: 255.255.255.0
+- **Passerelle**: 192.168.11.1
+- **Statut PHY**: **DISCONNECTED** ⚠️
+
+**PROBLÈME ACTUEL: PHY Connect status: Disconnected**
+
+Cela signifie que le **câble réseau RJ45 n'est PAS branché** à l'imprimante.
+
+**SOLUTION RAPIDE:**
+1. Branchez un câble Ethernet RJ45 de l'imprimante à votre routeur/box WiFi
+2. Vérifiez que le voyant du port Ethernet s'allume
+3. Le statut devrait passer à "PHY Connect status: Connected"
+4. L'application se connectera automatiquement à 192.168.11.200:9100
+
+**Note:** L'application est déjà pré-configurée avec votre adresse IP. Il suffit de brancher le câble !
+
 ### Common WiFi IP Addresses
+- **Votre configuration actuelle**: `192.168.11.200` (Ethernet)
 - If using printer's hotspot: `192.168.192.168`
 - If on local network: Check printer display or print configuration page
 
